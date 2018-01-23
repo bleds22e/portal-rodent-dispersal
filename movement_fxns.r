@@ -244,7 +244,30 @@ same_period = function(dat, tags){
   }
   return (flagged_rats)
 }
+
+# only remove inconsistent species IDs, not inconsistent sex
+find_bad_spp_data = function(dat, tags, spp_col){
   
+  flagged_rats = data.frame("tag"=1, "reason"=1, "occurrences"=1)
+  outcount = 0
+  
+  for (t in 1:length(tags)){
+    tmp <- which(dat$tag == tags[t])
+    
+    if (nrow(dat[tmp,]) > 1) {    # if indiv was captured multiple times
+      spp_list = dat[tmp,spp_col]
+      spp = spp_list[1]
+      
+      for (s in 2:length(spp_list)){  # check for consistent species
+        if (spp_list[s] != spp){
+          outcount = outcount + 1
+          flagged_rats[outcount,] <- c(tags[t], "spp", nrow(dat[tmp,]))
+          break
+        }}
+    }}
+  return(flagged_rats)
+}
+
 
 find_bad_data2 = function(dat, tags, sex_col, spp_col){
   # check for consistent sex and species, outputs flagged tags to check, or to remove from study
