@@ -1,14 +1,18 @@
 # Looks at rodent movement
-wd = "C://Documents and Settings//sarah//My Documents//Active Research Projects//Rodent Movement"
-setwd(wd)
-source = ("movement_fxns.R")
+# EKB modified
+# Jan 2018
 
-PB = read.csv("PB_2000-2009.csv")
-PP = read.csv("PP_2000-2009.csv")
-small_rodents = rbind(PB, PP)
+library(dplyr)
 
-#add treatment
-small_rodents = trmt_to_rats(small_rodents)
+source("movement_fxns.r")
+source("additional_movement_fxns.r")
+
+small_rodents = filter(allclean, species == "PB" | species == "PP") # check 0021PP
+
+# treatment types have already been included:
+#   treatment type 1 = controls: 1, 2, 4, 8, 9, 11, 12, 14, 17, 22
+#   treatment type 2 = krat exclosures: 3, 6, 13, 15, 18, 19, 20, 21
+#   treatment type 3 = full exclosures: 5, 7, 10, 16, 23, 24
 
 # make sure text is text and not atomic
 small_rodents$tag = as.character(small_rodents$tag) 
@@ -16,13 +20,13 @@ small_rodents$sex = as.character(small_rodents$sex)
 small_rodents$species = as.character(small_rodents$species)
 
 # give untagged indivs unique tag numbers (7 digits)
-small_rodents = id_unknowns(small_rodents)
+# small_rodents = id_unknowns(small_rodents)        
 
 # get list of unique tags
 tags = unique(small_rodents$tag)   
 
 # output list of flagged data
-flags = find_bad_data(small_rodents, tags)
+flags = find_bad_spp_data(small_rodents, tags, 9)
 
 # get list of unique "bad tags"
 badtags=unique(flags$tag)
@@ -31,22 +35,22 @@ badtags=unique(flags$tag)
 for (i in 1:length(badtags)) {
   small_rodents = subset(small_rodents, tag != badtags[i])
   }
-  
+
 # don't use periods with negative period numbers and periods with only one day of trapping
 small_rodents = subset(small_rodents, period != 267 & period != 277 & period != 278 &
                                       period != 283 & period != 284 & period != 300 &
                                       period != 311 & period != 313 & period != 314 &
                                       period != 318 & period != 321 & period != 323 &
                                       period != 337 & period != 339 & period != 344 &
-                                      period != 351)
+                                      period != 351 & period > 0)
   
 
 ### Create a set of capture histories by treatment and by plot
 tags = unique(sort(small_rodents$tag))
 periods = unique(sort(small_rodents$period))
 
-mark_trmt = create_trmt_hist(small_rodents, tags, periods)
-mark_plot = create_plot_hist(small_rodents, tags, periods)  
+mark_trmt = create_trmt_hist(small_rodents, tags, periods) # currently not working?
+mark_plot = create_plot_hist(small_rodents, tags, periods) # currently not working?
 
 # get list of indivs that moved plots or treatment, species is included
 moving_rats = find_rats_that_move(small_rodents, tags)
