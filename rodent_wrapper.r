@@ -19,9 +19,7 @@ library(PhyloOrchard)
 #          setup - select wd, import data, source code,  file to collect results
 #---------------------------------------------------------------------------------
 #set working directory
-wd = "/Users/sarah/Documents/GitHub/portal-rodent-dispersal"
-#wd = "C:/Users/sarah/Documents/GitHub/portal-rodent-dispersal"
-setwd(wd)
+
 source("movement_fxns.R")
 
 #import all data
