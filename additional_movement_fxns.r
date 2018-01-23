@@ -71,7 +71,9 @@ create_plot_hist = function(dat, tags, prd) {
   MARK_data_by_plot = data.frame("captures"=1, 
                                  "censored"=1, 
                                  "tags"=1, 
-                                 "species"=1)
+                                 "species"=1, 
+                                 "sex" = 1,
+                                 "avg_weight" = 1)
   
   outcount = 0
   
@@ -104,7 +106,7 @@ create_plot_hist = function(dat, tags, prd) {
     avg_mass = mean(dat[which(dat$tag == tags[t]), 15])
     
     outcount = outcount + 1
-    MARK_data_by_plot[outcount, ] <- c(capture_history, censored, tags[t], spp)
+    MARK_data_by_plot[outcount, ] <- c(capture_history, censored, tags[t], spp, sex, avg_mass)
     
   }
   
@@ -121,8 +123,8 @@ find_rats_that_move = function(dat, tags){
   for (t in 1:length(tags)){
     
     tmp <- which(dat$tag == tags[t])
-    #spp = unique(dat[tmp, 9])
-    #sex = unique(dat[tmp, 10])
+    spp = unique(dat[tmp, 9])
+    sex = unique(dat[tmp, 10])
     
     if (nrow(dat[tmp,]) > 1) {
       trmt_list = dat[tmp, 4]
@@ -130,7 +132,7 @@ find_rats_that_move = function(dat, tags){
       for (i in 2:length(trmt_list)){
         if (trmt_list[i] != trmt) {
           outcount = outcount + 1
-          moving_rats[outcount,] <- c(tags[t], dat[tmp[i], 9], dat[tmp[i], 10], "trmt", nrow(dat[tmp,]))
+          moving_rats[outcount,] <- c(tags[t], spp, sex, "trmt", nrow(dat[tmp,]))
           break
         }}
       plot_list = dat[tmp, 5]
@@ -138,7 +140,7 @@ find_rats_that_move = function(dat, tags){
       for (p in 2:length(plot_list)){
         if (plot_list[p] != plot){
           outcount = outcount + 1
-          moving_rats[outcount,] <- c(tags[t], dat[tmp[i], 9], dat[tmp[i], 10], "plot", nrow(dat[tmp,]))
+          moving_rats[outcount,] <- c(tags[t], spp, sex, "plot", nrow(dat[tmp,]))
           break
         }}
     }}
@@ -153,8 +155,8 @@ num_captures = function(dat, tags){
   
   for (t in 1:length(tags)){
     tmp <- which(dat$tag == tags[t])
-    spp = unique(dat[tmp,6])
-    sex = unique(dat[tmp,7])
+    spp = unique(dat[tmp, 9])
+    sex = unique(dat[tmp, 10])
     captures = nrow(dat[tmp,])
     outcount = outcount + 1
     rat_catches[outcount,] <- c(tags[t], spp, sex, captures)
@@ -175,15 +177,15 @@ examine_trmt_moves = function(dat, tags){
     ind_dat=dat[which(dat$tag==tags[t]),]  # subset data for individual with tag t
     if (nrow(ind_dat) > 1) {  # only record data for indivs with multiple captures
       for (i in 1:nrow(ind_dat)){
-        if (ind_dat[i,17]==1){
+        if (ind_dat[i, 4] == 1){
           state = "A"
           move_list <- append(move_list, state)
           censored = 1 }
-        else if (ind_dat[i,17]==2){
+        else if (ind_dat[i,4] == 2){
           state = "B"
           move_list <- append(move_list, state)
           censored = 1 }
-        else if (ind_dat[i,17]==3){
+        else if (ind_dat[i,4] == 3){
           state = "C"
           move_list <- append(move_list, state)
           censored = -1 }
@@ -191,13 +193,13 @@ examine_trmt_moves = function(dat, tags){
       type = move_list[1]
       moves = 0
       new_list = ""
-      for (l in 1:length(move_list)){
+      for (l in 2:length(move_list)){
         new_list = paste(new_list, move_list[l], sep="")
         c2r = 0
         r2c = 0
         c2e = 0
         r2e = 0
-        if (move_list[l]!=type) {
+        if (move_list[l]!=type) { 
           moves = moves + 1
           if (type == "A" &  move_list[l] == "B") {
             c2r = c2r + 1}
@@ -207,10 +209,10 @@ examine_trmt_moves = function(dat, tags){
             r2c = r2c + 1}
           else if (type == "B" & move_list[l] == "C") {
             r2e = r2e + 1}
-          type = move_list[l] 
+          type = move_list[l] # this part currently not working fully
         }}
-      spp = unique(ind_dat[,6])
-      sex = unique(ind_dat[,7])
+      spp = unique(ind_dat[,9])
+      sex = unique(ind_dat[,10])
       outcount = outcount + 1
       moves_trmt[outcount,] <- c(tags[t], spp, sex, moves, new_list, censored, c2r, r2c, c2e, r2e)
     }}
@@ -228,7 +230,7 @@ examine_plot_moves = function(dat, tags){
     ind_dat=dat[which(dat$tag==tags[t]),]  # subset data for individual with tag t
     if (nrow(ind_dat) > 1) {  # only record data for indivs with multiple captures
       for (i in 1:nrow(ind_dat)){
-        state = ind_dat[i,4]
+        state = ind_dat[i, 4]
         move_list <- append(move_list, state)}
     }
     type = move_list[1]
@@ -242,8 +244,8 @@ examine_plot_moves = function(dat, tags){
         near = is.neighbor(move_list[l], type) 
         neighbor = paste(neighbor, near, sep = "")
         type = move_list[l] }}
-    spp = unique(ind_dat[,6])
-    sex = unique(ind_dat[,7])
+    spp = unique(ind_dat[, 9])
+    sex = unique(ind_dat[, 10])
     outcount = outcount + 1
     moves_plot[outcount,] <- c(tags[t], spp, sex, moves, neighbor, new_list)
   }
