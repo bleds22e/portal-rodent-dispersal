@@ -7,7 +7,8 @@ library(dplyr)
 source("movement_fxns.r")
 source("additional_movement_fxns.r")
 
-small_rodents = filter(allclean, species == "PB" | species == "PP") # check 0021PP
+clean_rodents <- read.csv("rawdata/cleaned_1989-2009.csv", stringsAsFactors = FALSE)
+small_rodents = filter(clean_rodents, species == "PB" | species == "PP") # check 0021PP
 
 # treatment types have already been included:
 #   treatment type 1 = controls: 1, 2, 4, 8, 9, 11, 12, 14, 17, 22
@@ -49,35 +50,52 @@ small_rodents = subset(small_rodents, period != 267 & period != 277 & period != 
 tags = unique(sort(small_rodents$tag))
 periods = unique(sort(small_rodents$period))
 
-mark_trmt = create_trmt_hist(small_rodents, tags, periods) # currently not working?
-mark_plot = create_plot_hist(small_rodents, tags, periods) # currently not working?
+mark_trmt = create_trmt_hist(small_rodents, tags, periods) 
+mark_plot = create_plot_hist(small_rodents, tags, periods) 
 
 # get list of indivs that moved plots or treatment, species is included
 moving_rats = find_rats_that_move(small_rodents, tags)
 
 # get rodents that move plots
-moving_tags = unique(moving_rats$tag)
+moving_tags_plot = unique(moving_rats$tag)
 outcount = 0
-MARK_movers = data.frame("ch"=1, "censored"=1, "tag"=1, "spp"=1, "sex"=1, "mass"=1)
-for (i in 1:length(moving_tags)) {
-  mover = subset(mark_plot, tags == moving_tags[i])
-  if (nrow(mover) > 0) {
+MARK_movers_plot = data.frame("ch"=1, "censored"=1, "tag"=1, "spp"=1, "sex"=1, "mass"=1)
+for (i in 1:length(moving_tags_plot)) {
+  mover_plot = subset(mark_plot, tags == moving_tags_plot[i])
+  if (nrow(mover_plot) > 0) {
   outcount = outcount + 1
-  MARK_movers[outcount,] <- mover
+  MARK_movers_plot[outcount,] <- mover_plot
   }}   
 
+# get rodents that move treatments
+moving_tags_trmt = unique(moving_rats$tag)
+outcount = 0
+MARK_movers_trmt = data.frame("ch"=1, "censored"=1, "tag"=1, "spp"=1, "sex"=1, "mass"=1)
+for (i in 1:length(moving_tags_trmt)) {
+  mover_trmt = subset(mark_trmt, tags == moving_tags_trmt[i])
+  if (nrow(mover_trmt) > 0) {
+    outcount = outcount + 1
+    MARK_movers_trmt[outcount,] <- mover_trmt
+  }}  
+
 #count non-movers
-moving_tags = unique(moving_plot$tag)
-nonmover = mark_plot
-for (i in 1:length(moving_tags)) {
-  nonmover = subset(nonmover, tags != moving_tags[i])
-}   
+moving_tags_plot = unique(mark_plot$tag)
+nonmover_plot = mark_plot
+for (i in 1:length(moving_tags_plot)) {
+  nonmover_plot = subset(nonmover_plot, tags != moving_tags[i])
+}
+
+moving_tags_trmt = unique(mark_trmt$tag)
+nonmover_trmt = mark_trmt
+for (i in 1:length(moving_tags_trmt)) {
+  nonmover_trmt = subset(nonmover_trmt, tags != moving_tags[i])
+}
 
 # find num captures/rat
 rat_catches=num_captures(small_rodents, tags)
 
 # plot captures to see if MARK is a good way to look at these
-pdf(file="recaptures.pdf",10,10)
+pdf(file="output/PP_PB_recaptures.pdf",10,10)
 par(mfrow=c(1,1))
 
 hist(rat_catches$captures, labels=TRUE, xlab = "# captures / rodent", ylab = "frequency",
@@ -94,14 +112,15 @@ dev.off()
 # look at juveniles?
 
 # how often are movers moving trmt?
-trmt_moves = examine_trmt_moves(small_rodents, moving_tags)
+trmt_moves = examine_trmt_moves(small_rodents, moving_tags_trmt) # only counts one movement, different issues (not only first move, not only B -> A or A -> B)
   trmt_moves = trmt_moves[which(trmt_moves$num_moves > 0),]
   trmt_moves$num_moves = as.numeric(trmt_moves$num_moves)
   trmt_moves$c2r = as.numeric(trmt_moves$c2r)
   trmt_moves$r2c = as.numeric(trmt_moves$r2c)
   trmt_moves$c2e = as.numeric(trmt_moves$c2e)
   trmt_moves$r2e = as.numeric(trmt_moves$r2e)
-plot_moves = examine_plot_moves(small_rodents, moving_tags)
+  
+plot_moves = examine_plot_moves(small_rodents, moving_tags_plot)
 
 
 hist(trmt_moves[,7], labels = TRUE)
@@ -124,3 +143,4 @@ hist(PB[,7], labels=T, main = "C - R")
 hist(PB[,8], labels=T, main = "R - C")
 hist(PP[,7], labels=T, main = "C - R")
 hist(PP[,8], labels=T, main = "R - C")
+
