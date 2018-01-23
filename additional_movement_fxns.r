@@ -13,98 +13,132 @@
 ### Create a set of capture histories by treatment type
 create_trmt_hist = function(dat, tags, prd){
   
-  MARK_data = data.frame("captures"=1, "censored"=1, "tags"=1, "species"=1, "sex"=1, "avg_weight"=1)
+  MARK_data = data.frame("captures"=1, 
+                         "censored"=1, 
+                         "tags"=1, 
+                         "species"=1, 
+                         "sex"=1, 
+                         "avg_weight"=1)
+  
   outcount = 0
   
   for (t in 1:length(tags)){
+    
     capture_history = "" #create empty string
+    
     for (p in 1:length(prd)){
+      
       tmp<-which(dat$tag==tags[t] & dat$period==prd[p])
+      
       if (nrow(dat[tmp,]) == 0) {
         state = "0"
         capture_history = paste(capture_history, state, sep="")}
       else if (nrow(dat[tmp,] > 0)) {
-        if (dat[tmp,17]==1){
+        if (dat[tmp, 4] == 1){
           state = "A"
           capture_history = paste(capture_history, state, sep="")}
-        else if (dat[tmp,17]==2){
+        else if (dat[tmp, 4] == 2){
           state = "B"
           capture_history = paste(capture_history, state, sep="")}
-        else if (dat[tmp,17]==3){
+        else if (dat[tmp, 4] == 3){
           state = "C"
           capture_history = paste(capture_history, state, sep="")}
       }
     }
+    
     tmp2<-which(dat$tag==tags[t])
     censored = 1
+    
     for (irow in nrow(dat[tmp2,])){
-      if (dat[tmp2,17] == 3) {
+      if (dat[tmp2, 4] == 3) {
         censored = -1
         break}}
-    spp = unique(dat[which(dat$tag==tags[t]),6])
-    sex = unique(dat[which(dat$tag==tags[t]),7])
-    avg_mass = mean(dat[which(dat$tag==tags[t]),11])
+    
+    spp = unique(dat[which(dat$tag == tags[t]), 9])
+    sex = unique(dat[which(dat$tag == tags[t]), 10])
+    avg_mass = mean(dat[which(dat$tag==tags[t]), 15])
+    
     outcount = outcount + 1
     MARK_data[outcount,] <- c(capture_history, censored, tags[t], spp, sex, avg_mass)
+    
   }
   return(MARK_data)
 }
 
 ## Create a set of capture histories by plot
 create_plot_hist = function(dat, tags, prd) {
-  MARK_data_by_plot = data.frame("captures"=1, "censored"=1, "tags"=1, "species"=1, "sex"=1, "avg_weight"=1)
+  
+  MARK_data_by_plot = data.frame("captures"=1, 
+                                 "censored"=1, 
+                                 "tags"=1, 
+                                 "species"=1)
+  
   outcount = 0
   
   for (t in 1:length(tags)){
     capture_history = "" #create empty string
+    
     for (p in 1:length(prd)){
-      tmp<-which(dat$tag==tags[t] & dat$period==prd[p])
+      
+      tmp<-which(dat$tag == tags[t] & dat$period == prd[p])
+      
       if (nrow(dat[tmp,]) == 0) {
         state = "0"
-        capture_history = paste(capture_history, state, sep=",")}
+        capture_history = paste(capture_history, state, sep = ",")}
       else if (nrow(dat[tmp,] > 0)) {
-        state = as.character(dat[tmp,4])
-        capture_history = paste(capture_history, state, sep=",")}
+        state = as.character(dat[tmp, 5])
+        capture_history = paste(capture_history, state, sep = ",")}
     }
-    tmp2<-which(dat$tag==tags[t])
+    
+    tmp2<-which(dat$tag == tags[t])
+    
     censored = 1
+    
     for (irow in nrow(dat[tmp2,])){
-      if (dat[tmp2,17] == 3) {
+      if (dat[tmp2, 4] == 3) {
         censored = -1
         break}}
-    spp = unique(dat[which(dat$tag==tags[t]),6])
-    sex = unique(dat[which(dat$tag==tags[t]),7])
-    avg_mass = mean(dat[which(dat$tag==tags[t]),11])
+    
+    spp = unique(dat[which(dat$tag == tags[t]), 9])
+    sex = unique(dat[which(dat$tag == tags[t]), 10])
+    avg_mass = mean(dat[which(dat$tag == tags[t]), 15])
+    
     outcount = outcount + 1
-    MARK_data_by_plot[outcount,] <- c(capture_history, censored, tags[t], spp, sex, avg_mass)
+    MARK_data_by_plot[outcount, ] <- c(capture_history, censored, tags[t], spp)
+    
   }
+  
   return(MARK_data_by_plot)
+  
 }
 
 # Find rats that are moving around
-find_rats_that_move = function(dat, tags, spp_col, sex_col, trmt_col, plot_col){
+find_rats_that_move = function(dat, tags){
+  
   moving_rats = data.frame("tag"=1, "spp"=1, "sex"=1, "loc"=1, "occurrences"=1)
   outcount = 0
   
   for (t in 1:length(tags)){
+    
     tmp <- which(dat$tag == tags[t])
-    spp = unique(dat[tmp,spp_col])
-    sex = unique(dat[tmp,sex_col])
+    #spp = unique(dat[tmp, 9])
+    #sex = unique(dat[tmp, 10])
+    
     if (nrow(dat[tmp,]) > 1) {
-      trmt_list = dat[tmp,trmt_col]
+      trmt_list = dat[tmp, 4]
       trmt = trmt_list[1]
       for (i in 2:length(trmt_list)){
         if (trmt_list[i] != trmt) {
           outcount = outcount + 1
-          moving_rats[outcount,] <- c(tags[t], spp, sex, "trmt", nrow(dat[tmp,]))
+          moving_rats[outcount,] <- c(tags[t], dat[tmp[i], 9], dat[tmp[i], 10], "trmt", nrow(dat[tmp,]))
           break
         }}
-      plot_list = dat[tmp,plot_col]
+      plot_list = dat[tmp, 5]
       plot = plot_list[1]
       for (p in 2:length(plot_list)){
         if (plot_list[p] != plot){
           outcount = outcount + 1
-          moving_rats[outcount,] <- c(tags[t], spp, sex, "plot", nrow(dat[tmp,]))
+          moving_rats[outcount,] <- c(tags[t], dat[tmp[i], 9], dat[tmp[i], 10], "plot", nrow(dat[tmp,]))
           break
         }}
     }}
@@ -504,20 +538,20 @@ plot_recap_hist = function (data, name) {
 #---------------------------------------------------------------------------------
 # small-bodied species may be rare during winter months (go into torpor)
 # we want to mark the months that this is, so we can later denote them properly in MARK
-pp = subset(het, species == "PP")
-barplot(table(pp$mo))
-pf = subset(het, species == "PF")
-barplot(table(pf$mo))
+#pp = subset(het, species == "PP")
+#barplot(table(pp$mo))
+#pf = subset(het, species == "PF")
+#barplot(table(pf$mo))
 
 
-prds = c(261:380)
-winter = c()
+#prds = c(261:380)
+#winter = c()
 
-for (p in 1:length(prds)){
-  dat = subset(allrats, period == prds[p])
-  mo = dat[1,2]
-  if (mo %in% list(12, 1, 2)){
-    winter = append(winter, prds[p])
-  }
-}
+#for (p in 1:length(prds)){
+#  dat = subset(allrats, period == prds[p])
+#  mo = dat[1,2]
+#  if (mo %in% list(12, 1, 2)){
+#    winter = append(winter, prds[p])
+#  }
+#}
 
