@@ -193,12 +193,13 @@ examine_trmt_moves = function(dat, tags){
       type = move_list[1]
       moves = 0
       new_list = ""
-      for (l in 2:length(move_list)){
+      c2r = 0
+      r2c = 0
+      c2e = 0
+      r2e = 0
+      for (l in 1:length(move_list)){ # changed from 1 to 2, no effect
         new_list = paste(new_list, move_list[l], sep="")
-        c2r = 0
-        r2c = 0
-        c2e = 0
-        r2e = 0
+        # moved c2r = 0, etc. from here
         if (move_list[l]!=type) { 
           moves = moves + 1
           if (type == "A" &  move_list[l] == "B") {
@@ -226,11 +227,11 @@ examine_plot_moves = function(dat, tags){
   outcount = 0
   
   for (t in 1:length(tags)){
-    move_list = as.numeric() #create empty string
     ind_dat=dat[which(dat$tag==tags[t]),]  # subset data for individual with tag t
     if (nrow(ind_dat) > 1) {  # only record data for indivs with multiple captures
+      move_list = as.numeric()
       for (i in 1:nrow(ind_dat)){
-        state = ind_dat[i, 4]
+        state = ind_dat[i, 5]
         move_list <- append(move_list, state)}
     }
     type = move_list[1]
@@ -239,7 +240,7 @@ examine_plot_moves = function(dat, tags){
     new_list = ""
     for (l in 1:length(move_list)){
       new_list = paste(new_list, move_list[l], sep=",")
-      if (move_list[l]!=type) {
+      if (move_list[l] != type) {
         moves = moves + 1
         near = is.neighbor(move_list[l], type) 
         neighbor = paste(neighbor, near, sep = "")
