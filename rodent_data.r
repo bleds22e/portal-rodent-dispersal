@@ -82,21 +82,21 @@ for (i in 1:length(moving_tags_trmt)) {
 moving_tags_plot = unique(mark_plot$tag)
 nonmover_plot = mark_plot
 for (i in 1:length(moving_tags_plot)) {
-  nonmover_plot = subset(nonmover_plot, tags != moving_tags[i])
+  nonmover_plot = subset(nonmover_plot, tags != moving_tags_plot[i])
 }
 
 moving_tags_trmt = unique(mark_trmt$tag)
 nonmover_trmt = mark_trmt
 for (i in 1:length(moving_tags_trmt)) {
-  nonmover_trmt = subset(nonmover_trmt, tags != moving_tags[i])
+  nonmover_trmt = subset(nonmover_trmt, tags != moving_tags_trmt[i])
 }
 
 # find num captures/rat
 rat_catches=num_captures(small_rodents, tags)
 
 # plot captures to see if MARK is a good way to look at these
-pdf(file="output/PP_PB_recaptures.pdf",10,10)
-par(mfrow=c(1,1))
+#pdf(file="output/PP_PB_recaptures.pdf",10,10)
+#par(mfrow=c(1,1))
 
 hist(rat_catches$captures, labels=TRUE, xlab = "# captures / rodent", ylab = "frequency",
       main = "Rodent recaptures", col = "orange3", breaks=31)
@@ -115,18 +115,17 @@ dev.off()
 trmt_moves = examine_trmt_moves(small_rodents, moving_tags_trmt) # only counts one movement, different issues (not only first move, not only B -> A or A -> B)
   trmt_moves = trmt_moves[which(trmt_moves$num_moves > 0),]
   trmt_moves$num_moves = as.numeric(trmt_moves$num_moves)
-  trmt_moves$c2r = as.numeric(trmt_moves$c2r)
+  trmt_moves$c2r = as.integer(trmt_moves$c2r)
   trmt_moves$r2c = as.numeric(trmt_moves$r2c)
   trmt_moves$c2e = as.numeric(trmt_moves$c2e)
   trmt_moves$r2e = as.numeric(trmt_moves$r2e)
   
 plot_moves = examine_plot_moves(small_rodents, moving_tags_plot)
 
-
-hist(trmt_moves[,7], labels = TRUE)
-hist(trmt_moves[,8], labels = TRUE)
-hist(trmt_moves[,9], labels = TRUE)
-hist(trmt_moves[,10], labels = TRUE)
+hist(trmt_moves[,7], labels = TRUE, xlab = "c2r")
+hist(trmt_moves[,8], labels = TRUE, xlab = "r2c")
+hist(trmt_moves[,9], labels = TRUE, xlab = "c2e")
+hist(trmt_moves[,10], labels = TRUE, xlab = "r2e")
 
 M = trmt_moves[which(trmt_moves[,3]=="M"),]
 F = trmt_moves[which(trmt_moves[,3]=="F"),]
