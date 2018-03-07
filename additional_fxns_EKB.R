@@ -35,31 +35,48 @@ repo_data_to_Supp_data <- function(data){
   return(data)
 }
 
+
 clean_data_for_capture_histories <- function(data){
   
-  # from Sarah Supp's code
-  #   - uses functions found in movement_fxns.r
-  
-  # make sure text is text and not atomic
-  data$tag = as.character(data$tag) 
-  data$sex = as.character(data$sex)
+  # change some cols from factor to character class
+  data$tag = as.character(data$tag)
   data$species = as.character(data$species)
+  data$sex = as.character(data$sex)
   
-  # give untagged indivs unique tag numbers (7 digits)
-  # small_rodents = id_unknowns(small_rodents)        
+  #subset data where species are known (e.g., no "unidentified rodents" or genus-only)
+  data2 = subset(data, species!="DX" & species!="UR" & species!="RX" & species!="SX" & species!="PX" & species != "OX")
   
-  # get list of unique tags
-  tags = unique(data$tag)   
+  # give untagged individuals a unique 7-number code
+  data2 = id_unknowns(data2, 16)
   
-  # output list of flagged data
-  flags = find_bad_spp_data(data, tags, 9)
-
-  # get list of unique "bad tags"
-  badtags=unique(flags$tag)
+  # make sure when note2 == "*" it is counted as a new tag
+  # necessary if using data data (ear and toe tags)
+  # returns the dataset with new IDs for checking for duplicate tags that occur over a suspiciously long time period
+  tags = unique(data2$tag)
+  data3 = starred_tags(data2, tags, 9, 16)
   
-  # delete bad tags from dataset for analysis
-  for (i in 1:length(badtags)) {
-    data = subset(data, tag != badtags[i])
-  }
-  return(data)
+  #check for dead individuals, give data with same tag after marked dead a new unique ID
+  tags = unique(data3$tag)
+  data4 = is_dead(data3, tags, 9, 16)
+  
+  # check for individuals with same tag, but captured over long timespan (may be able to separate them) 
+  # necessary if using data data (ear and toe tags)
+  # returns the dataset with new IDs for those that can easily be sorted out based on sex and year
+  tags = unique(data4$tag)
+  dups = is_duplicate_tag(data4, tags, 10, 9, 16) #check to see if can separate tags based
+  
+  #eliminate bad data based on tags identified in dups$bad
+  duptags = unique(dups$bad$tag)
+  data5 = dups$data[-which(dups$data$tag %in% duptags),] #delete rows flagged as duplicates without clear resolution
+  
+  tags = unique(data5$tag)
+  same = same_period(data5, tags)
+  
+  #eliminate tags that appear more than once in the same period - questionable data
+  sametags = unique(same$tag)
+  data6 = data5[-which(data5$tag %in% sametags),]
+  
+  # get rid of 'bad data'; deletes data where species is inconsistent. 
+  data7 = subsetDat(data6)
+  
 }
