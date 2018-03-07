@@ -10,7 +10,7 @@ unk = 1000000
 for (irow in 1:nrow(dat)){
     tag = dat[irow,tag_col]
     unk = unk + 1
-    if (tag == "") {
+    if (is.na(tag)) {
       dat[irow,tag_col] = unk
     }
     else if (tag == "0") {
