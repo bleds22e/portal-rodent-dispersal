@@ -15,10 +15,7 @@ create_trmt_hist = function(dat, tags, prd){
   
   MARK_data = data.frame("captures"=1, 
                          "censored"=1, 
-                         "tags"=1, 
-                         "species"=1, 
-                         "sex"=1, 
-                         "avg_weight"=1)
+                         "tags"=1)
   
   outcount = 0
   
@@ -49,17 +46,17 @@ create_trmt_hist = function(dat, tags, prd){
     tmp2<-which(dat$tag==tags[t])
     censored = 1
     
-    for (irow in nrow(dat[tmp2,])){
-      if (dat[tmp2, 4] == 3) {
-        censored = -1
-        break}}
+    #for (irow in nrow(dat[tmp2,])){
+    #  if (dat[tmp2, 4] == 3) {
+    #    censored = -1
+    #    break}}
     
-    spp = unique(dat[which(dat$tag == tags[t]), 9])
-    sex = unique(dat[which(dat$tag == tags[t]), 10])
-    avg_mass = mean(dat[which(dat$tag==tags[t]), 15])
+    #spp = unique(dat[which(dat$tag == tags[t]), 9])
+    #sex = unique(dat[which(dat$tag == tags[t]), 10])
+    #avg_mass = mean(dat[which(dat$tag==tags[t]), 15])
     
     outcount = outcount + 1
-    MARK_data[outcount,] <- c(capture_history, censored, tags[t], spp, sex, avg_mass)
+    MARK_data[outcount,] <- c(capture_history, censored, tags[t])
     
   }
   return(MARK_data)
