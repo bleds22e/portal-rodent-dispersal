@@ -6,6 +6,9 @@
 
 # Do psi and S significantly differ among species/guilds?
 
+ms_data <- read.table("mark_PP_EKB.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+ms_data <- head(ms_data, 50)
+
 runRMARK = function(wd){
   
 
@@ -13,31 +16,31 @@ runRMARK = function(wd){
 #          bring in the data and source files
 #---------------------------------------------------------------------------------
 
-#grab all the .txt files to loop over for analysis
-files = list.files(wd, pattern = "mark.txt", full.name=T, recursive=T)
-
-rm(list=ls()[!ls() %in% c("files")])   # clears the memory of everything except the file list, since R MARK is very memory hungry
-
-for (f in 1:length(files)){
-  
-  require(RMark)
-  
-  # bring in the inp files and convert to RMark format 
-  ms_data = import.chdata(files[f], field.types=c("n","f"))
-  
-  #convert to factor
-  ms_data$species = as.factor(ms_data$species)
-  spname = ms_data$species[1]
-  
-  print(spname)
-  cat("Imported data.", file="outfile.txt", sep="\n")
+# #grab all the .txt files to loop over for analysis
+# files = list.files(wd, pattern = "mark.txt", full.name=T, recursive=T)
+# 
+# rm(list=ls()[!ls() %in% c("files")])   # clears the memory of everything except the file list, since R MARK is very memory hungry
+# 
+# for (f in 1:length(files)){
+#   
+#   require(RMark)
+#   
+#   # bring in the inp files and convert to RMark format 
+#   ms_data = import.chdata(files[f], field.types=c("n","f"))
+#   
+#   #convert to factor
+#   ms_data$species = as.factor(ms_data$species)
+#   spname = ms_data$species[1]
+#   
+#   print(spname)
+#   cat("Imported data.", file="outfile.txt", sep="\n")
 
 #---------------------------------------------------------------------------------
 #          process multistrata data, includes capture at home, and dipsersal transitions 
 #---------------------------------------------------------------------------------
   # Build up the model. 
   # begin.time == first period number
-  ms_process = process.data(ms_data, model = "Multistrata", begin.time = 130, group = c("species"))
+  ms_process = process.data(ms_data, model = "Multistrata", begin.time = 130) #group = c("species")
   
   #ddl = design data list
   ms_ddl = make.design.data(ms_process) 
@@ -83,7 +86,6 @@ for (f in 1:length(files)){
 #          Define model structures for S (survival probability)
 #---------------------------------------------------------------------------------
   Snull = list(formula = ~1)          
-
 
 #---------------------------------------------------------------------------------
 #          Define model structures for p (capture probability)
@@ -160,7 +162,7 @@ for (f in 1:length(files)){
 #---------------------------------------------------------------------------------
   #send results to new folder - change working directory
   #wd = "~/portal-rodent-dispersal/mark_output/"
-  setwd("C://Users//sarah//Documents//GitHub//portal-rodent-dispersal//mark_output//")
+  #setwd("C://Users//ellen.bledsoe//'Dropbox (UFL)'//Git//portal-rodent-dispersal_FORK//mark_output_EKB//")
   
   cat("running the multistrata models", sep="\n", file="outfile.txt", append=TRUE)
   
@@ -185,14 +187,17 @@ for (f in 1:length(files)){
 #---------------------------------------------------------------------------------
 #          Write result data to csv files
 #---------------------------------------------------------------------------------
-  write.csv(paste(movemodel$results$beta, paste(wd, "movemodel_beta_", spname, ".csv", sep=""))
-  write.csv(movemodel$results$real, paste(wd, "movemodel_real_", spname, ".csv", sep=""))
-  
-  cat("End Code. Look for your csv files.", sep="\n", file="outfile.txt", append=TRUE)
-  print( paste(spname, " is done.", sep = ""))
-  
-  rm(list=ls()[!ls() %in% c("f", "files")])   # clears the memory of everything except the file list and iterator
+  # write.csv(paste(movemodel$results$beta, paste(wd, "movemodel_beta_", spname, ".csv", sep=""))
+  # write.csv(movemodel$results$real, paste(wd, "movemodel_real_", spname, ".csv", sep=""))
+  # 
+  # cat("End Code. Look for your csv files.", sep="\n", file="outfile.txt", append=TRUE)
+  # print( paste(spname, " is done.", sep = ""))
+  # 
+  # rm(list=ls()[!ls() %in% c("f", "files")])   # clears the memory of everything except the file list and iterator
 }
 
 #END OF FUNCTION
-}
+#}
+library(RMark)
+
+runRMARK("C://Users//ellen.bledsoe//'Dropbox (UFL)'//Git//portal-rodent-dispersal_FORK//")
